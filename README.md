@@ -8,26 +8,27 @@ http://blog.mastermaps.com/2014/08/showing-geotagged-photos-on-leaflet-map.html
 Please contact Geograph before using, you also need a API key
 https://www.geograph.org.uk/help/api
 
-At the moment, hard coded to work with Geograph Britain and Ireland, with minor adaptations should be able to work with other projects. 
-
+* works with Geograph Britain, Ireland, Germany and Channel Islands. Specify which project with a single option. 
+https://www.geograph.org.uk/ , http://geo-en.hlipp.de/ , http://www.geograph.org.gg/
 
 Note: This plugin is heavily inspired by the demos from Leaflet.Photo, and as such uses its image popup styling. 
 as such have moved the leaflet-popup-photo CSS class from Leaflet.Photo/examples/css/map.css, to Leaflet.Photo/Leaflet.Photo.css, 
 so this project can just import one .css file
 
+
 ## Demo
-https://www.geograph.org/leaflet/GeographPhotos-example.html
+https://www.geograph.org/leaflet/Leaflet.GeographPhotos/GeographPhotos-example.html
 
 
 ## Prerequisites:
 *   https://github.com/Leaflet/Leaflet/    (obviouslly!)
-*   https://github.com/turban/Leaflet.Photo/    (a copy is bunded)
+*   https://github.com/turban/Leaflet.Photo/    (a copy is bunded - fixing issues to work in leaflet v1+)
 *   https://github.com/ded/reqwest/              (the copy that Leaflet.Photo used is bunded) 
 *   https://github.com/Leaflet/Leaflet.markercluster/   (copy loaded from CDN in example) 
 
 ## Optional: (can also display a layer of dots highlighting where photos are located)
-*   https://github.com/domoritz/leaflet-maskcanvas/
-*      uses reworked copy of https://github.com/jsmarkus/ExamplesByMesh/tree/master/JavaScript/QuadTree
+*   https://github.com/domoritz/leaflet-maskcanvas/  (a copy is bunded - fixing issues to work in leaflet v1+)
+*   https://github.com/jsmarkus/ExamplesByMesh/tree/master/JavaScript/QuadTree (a slightly tweaked version is bundled)
 
 ## Clearly inspired by and draws ideas from:
 *   https://github.com/bill-chadwick/Leaflet.MetricGrid/
@@ -37,24 +38,22 @@ https://www.geograph.org/leaflet/GeographPhotos-example.html
 ## See Also 
 *   https://leafletjs.com/examples/quick-start/
 *   https://github.com/bill-chadwick/Leaflet.MetricGrid/    (Display a dynamic OSGB and Irish Grid on map) 
-*   https://github.com/barryhunter/Leaflet.GeographCoverage/    (Displays a coverage aggrigated by squares)
+*   https://github.com/barryhunter/Leaflet.GeographCoverage/    (Displays coverage aggrigated by squares)
+*   https://github.com/barryhunter/Leaflet.GeographClickLayer/    (Displays thumbnails when click on the map instead)
 
 
 ## Options
 
-* **apiKey**: Get your own API key! https://www.geograph.org.uk/admin/apikey.php
-* **endPoint**: The Geograph API endpoint to use, shouldnt need changing
-* **fieldSelect**: The values to pull from API, shouldnt need to change, unless make a more elaborate popupl and want more detail
-* **initialLimit**: default 500. How many photos to load initially. All will show as dots, but due to clustering, usually many less thumbnails show
-* **refreshLimit**: default 100. How many photos to load each time zoom/move the map
+* **api_key**: Get your own API key! https://www.geograph.org.uk/admin/apikey.php
 
+* **project**: which Geograph Project to load. Defaults to 'britire', can also use 'germany' or 'islands' (for Channel Islands!) 
+
+* **query**: Full-text query to filter imagses. Same syntax as https://www.geograph.org.uk/article/Keyword-Searching-in-the-Browser
+* **user_id**: Can optionally filter by a Geograph User/Contributor ID.  
 
 * **showPhotoLayer**: default true, but can disable the Photo layer (but will stil need to load Leaflet.Photo even though its 'unused'
 * **showDotsLayer**: default false. can enable to show a preview of dots coverage. leaflet-maskcanvas is only needed if enabled
 * **autoZoomOnAdd**: default false. should the map be zoomed to extent of photos when first loaded (or query is changed) 
-
-* **searchQuery**: Full-text query to filter imagses. Same syntax as https://www.geograph.org.uk/article/Keyword-Searching-in-the-Browser
-* **userID**: Can optionally filter by a Geograph User/Contributor ID.  
 
 as extends BOTH Leaflet.Photo and Leaflet.markercluster, most options from those plugins can be used too. For example: 
 
@@ -62,3 +61,27 @@ as extends BOTH Leaflet.Photo and Leaflet.markercluster, most options from those
 
 NOTE: PLEASE don't make maxClusterRadius less than 60, as loads lots of thumbnails!
 
+
+## Use
+
+
+CSS: 
+
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.css" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+        <link rel="stylesheet" href="Leaflet.Photo/Leaflet.Photo.css" />
+
+JS (best loaded AFTER leaflet core):
+
+        <script src="Leaflet.Photo/examples/lib/reqwest.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet-src.js"></script>
+        <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+        <script src="Leaflet.Photo/Leaflet.Photo.js"></script>
+        <script src="Leaflet.GeographPhotos.js"></script>
+
+And add it to map... 
+
+        var gph = L.geographPhotos({api_key:'enter-your-key-here', autoZoomOnAdd: true, query:'canal'}).addTo(map);
+
+
+See the example html for fuller example, as well as loading for other projects

@@ -42,23 +42,27 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 
 	L.GeographPhotos = L.Photo.Cluster.extend({
 		options: {
-			//MarkerClusterGroup options, NOTE: PLEASE don't make maxClusterRadius than 60, as loads lots of thumbnails!
+			//MarkerClusterGroup options, NOTE: PLEASE dont make maxClusterRadius than 60 as loads lots of thumbnails!
 			maxClusterRadius:80, showCoverageOnHover: true, spiderfyDistanceMultiplier: 2,
 
+			project: 'britire',  //britire/germany/islands
+			//Note: can narrow the bounds, but please dont make wider, we dont have photos outside these bounds!
+        	        bi_bounds: L.latLngBounds([49.863788, -13.688451], [60.860395, 1.795260]),
+                	ci_bounds: L.latLngBounds([49.150211,-2.702359], [49.731385,  -2.005734]),
+	                de_bounds: L.latLngBounds([47.170071,5.766899], [55.138900, 15.120222]),
+
 			//geographPhotos options, shouldnt need to change these, except the api_key
-			apiKey: 'geograph_demo', //get your own key: https://www.geograph.org.uk/admin/apikey.php
-			endPoint: 'https://api.geograph.org.uk/api-facetql.php',
-			fieldSelect: "id,realname,wgs84_lat+as+lat,wgs84_long+as+lng,hash,title", //shouldnt need changing!
-			initialLimit: 500,
-			refreshLimit: 100,
+			api_key: 'geograph_demo', //get your own key: https://www.geograph.org.uk/admin/apikey.php
+			endpoint: 'https://api.geograph.org.uk/api-facetql.php',
+			select: "id,realname,wgs84_lat+as+lat,wgs84_long+as+lng,hash,title", //shouldnt need changing!
 
 			showPhotoLayer: true, //can turn off the images, but that would be unusual!
 			showDotsLayer: false, //if turn this on, need to load leaflet-maskcanvas first
 			autoZoomOnAdd: false,
 
 			//can filter the layer
-			searchQuery: '',
-			userID: null, //todo, not implemented yet!
+			query: '',
+			user_id: null, //todo, not implemented yet!
 
 			//general. Note: can narrow the bounds, but please dont make wider, we dont have photos outside these bounds!
 			bounds: L.latLngBounds(L.latLng(49.863788, -13.688451), L.latLng(60.860395, 1.795260)), 
@@ -79,7 +83,7 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 			this._done = new Array();
 
 			if (!this.options.showPhotoLayer)
-				this.options.fieldSelect = "wgs84_lat+as+lat,wgs84_long+as+lng";
+				this.options.select = "wgs84_lat+as+lat,wgs84_long+as+lng";
 
 			this.on('click', function (evt) {
 		                var photo = evt.layer.photo,
@@ -109,6 +113,22 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 	        onAdd: function (map) {
                     L.Photo.Cluster.prototype.onAdd.call(this,map);
 	            this._map = map;
+
+			if (this.options.project == 'islands') {
+				this.options.domain = "http://www.geograph.org.gg"
+				this.options.bounds = this.options.ci_bounds;
+				this.options.extra = "&is=1";
+			}
+			if (this.options.project == 'germany') {
+				this.options.domain = "https://geo-en.hlipp.de"
+				this.options.bounds = this.options.de_bounds;
+				this.options.extra = "&gg=1";
+			}
+			if (this.options.project == 'britire') {
+				this.options.domain = "https://www.geograph.org.uk"
+				this.options.bounds = this.options.bi_bounds;
+				this.options.extra = "";
+			}
 
 		    if (this._totalImages) { //there are images to show (initialRequest already called)
 			map.on('moveend', this.requestData, this);
@@ -151,7 +171,7 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 
 
 	        /**
-	            Redraws the data, clear current state, and starts a fresh initial request. Call this if change .options.searchQuery and/or options.userID
+	            Redraws the data, clear current state, and starts a fresh initial request
 	            @public
 	        */
        		Reset: function () {
@@ -185,11 +205,11 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 		initialRequest: function() {
 
 			//make the initial request, that calls fitBounds to zoom map to extent of query results. The 'order=sequence' is magic in that results should be relatively evenly distributed over the whole map
-			query = encodeURIComponent(this.options.searchQuery+(this.options.userID?' @user user'+this.options.userID:''));
+			query = encodeURIComponent(this.options.query+(this.options.user_id?' @user user'+this.options.user_id:''));
 
 			var that = this; //enclosure!
 			this._request = reqwest({
-				url: this.options.endPoint+'?match='+query+'&select='+this.options.fieldSelect+'&order=sequence+asc&limit='+this.options.initialLimit+'&callback=bar&key='+this.options.apiKey,
+				url: this.options.endpoint+'?match='+query+'&select='+this.options.select+'&order=sequence+asc&limit=1000&callback=bar&key='+this.options.api_key+this.options.extra,
 				type: 'jsonp',
 				jsonpCallbackName: 'bar', //we use a specific callback name, so it has consistent name, and hence the server can cache this API call. 
 				success: function (data) {
@@ -236,6 +256,9 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 	                //if ((!this._masklayer || !map.hasLayer(this._masklayer)) && !map.hasLayer(this)) //shouldn't happen, but just in case!
         	        //        return;
 
+			if (!map.getBounds().intersects(this.options.bounds))
+				return;
+
 			var center = map.getCenter();
 			var point1 = map.getPixelOrigin();
 			if (this._prevPoint && map.getZoom() == this._prevZoom) {
@@ -258,10 +281,10 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 				this.outputStatus("Making request...")
 				this._running = true;
 
-				var query = encodeURIComponent(this.options.searchQuery+(this.options.userID?' @user user'+this.options.userID:''));
+				var query = encodeURIComponent(this.options.query+(this.options.user_id?' @user user'+this.options.user_id:''));
 				var that = this; //enclosure!
 				this._request =  reqwest({
-	                		url: this.options.endPoint+'?match='+query+'&olbounds='+this._sentBounds+'&select='+this.options.fieldSelect+'&order=rand()&limit='+this.options.refreshLimit+'&callback=?&key='+this.options.apiKey,
+	                		url: this.options.endpoint+'?match='+query+'&olbounds='+this._sentBounds+'&select='+this.options.select+'&order=rand()&limit=500&callback=?&key='+this.options.api_key+this.options.extra,
 			                type: 'jsonp',
 			                success: function (data) {
 						that._running = false;
@@ -295,7 +318,7 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 				if (!this._done[rows[q].id]) {
 					//add the thumbnail to the clusterer data
                 		        row = rows[q];
-		                        row.link = "https://www.geograph.org.uk/photo/"+row.id; //todo make this use an option!
+		                        row.link = this.options.domain+"photo/"+row.id; //todo make this use an option!
                 		        row.thumbnail = this.getGeographUrl(row.id, row.hash, 'small');
 		                        row.url = this.getGeographUrl(row.id, row.hash, 'full');
                 		        row.caption = row.title+' by '+row.realname;
@@ -346,13 +369,22 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 			} else {
 				fullpath="/geophotos/"+yz+"/"+ab+"/"+cd+"/"+abcdef+"_"+hash; 
 			}
-	
-			switch(size) { 
-				case 'full': return "https://s0.geograph.org.uk"+fullpath+".jpg"; break; 
-				case 'med': return "https://s"+(gridimage_id%4)+".geograph.org.uk"+fullpath+"_213x160.jpg"; break; 
-				case 'small': 
-				default: return "https://s"+(gridimage_id%4)+".geograph.org.uk"+fullpath+"_120x120.jpg"; 
+			if (this.options.domain.indexOf('.org.uk') > -1) {
+				switch(size) {
+					case 'full': return "https://s0.geograph.org.uk"+fullpath+".jpg"; break;
+					case 'med': return "https://s"+(gridimage_id%4)+".geograph.org.uk"+fullpath+"_213x160.jpg"; break;
+					case 'small':
+					default: return "https://s"+(gridimage_id%4)+".geograph.org.uk"+fullpath+"_120x120.jpg";
+				}
+			} else {
+				switch(size) {
+					case 'full': return this.options.domain+fullpath+".jpg"; break;
+					case 'med': return this.options.domain+fullpath+"_213x160.jpg"; break;
+					case 'small':
+					default: return this.options.domain+fullpath+"_120x120.jpg";
+				}
 			}
+	
 		},
 
 		zeroFill: function(number, width) {
