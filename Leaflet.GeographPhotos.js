@@ -328,7 +328,7 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 				if (!this._done[rows[q].id]) {
 					//add the thumbnail to the clusterer data
                 		        row = rows[q];
-		                        row.link = this.options.domain+"photo/"+row.id; //todo make this use an option!
+		                        row.link = this.options.domain+"/photo/"+row.id; //todo make this use an option!
                 		        row.thumbnail = this.getGeographUrl(row.id, row.hash, 'small');
 		                        row.url = this.getGeographUrl(row.id, row.hash, 'full');
                 		        row.caption = row.title+' by '+row.realname;
