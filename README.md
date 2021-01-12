@@ -48,18 +48,20 @@ https://www.geograph.org/leaflet/Leaflet.GeographPhotos/GeographPhotos-example.h
 
 * **project**: which Geograph Project to load. Defaults to 'britire', can also use 'germany' or 'islands' (for Channel Islands!) 
 
-* **query**: Full-text query to filter imagses. Same syntax as https://www.geograph.org.uk/article/Keyword-Searching-in-the-Browser
+* **query**: Full-text query to filter images. A raw text query in SphinxSearch 'Extended Syntax' format. http://sphinxsearch.com/docs/current.html#extended-syntax . But see also https://www.geograph.org.uk/article/Keyword-Searching-in-the-Browser for a list/names of Fields that supported in the index. (but need to still use sphinxes field syntax, eg [@myriad SH50] or [@tags river])
 * **user_id**: Can optionally filter by a Geograph User/Contributor ID.  
+* **geo**: do a geographically centered serach on a specific lat/long, format 'lat,long,distance', eg `52.950583,-3.936389,2000`
 
 * **showPhotoLayer**: default true, but can disable the Photo layer (but will stil need to load Leaflet.Photo even though its 'unused'
 * **showDotsLayer**: default false. can enable to show a preview of dots coverage. leaflet-maskcanvas is only needed if enabled
 * **autoZoomOnAdd**: default false. should the map be zoomed to extent of photos when first loaded (or query is changed) 
+* **autoLoadOnMove**: default true. normally will load more images as pan/zoom the map. but in particular might want to disable this if loading all images on initial load (eg when using 'geo')
 
 as extends BOTH Leaflet.Photo and Leaflet.markercluster, most options from those plugins can be used too. For example: 
 
 * **showCoverageOnHover**: default true. When you mouse over a cluster it shows the bounds of its markers.
 
-NOTE: PLEASE don't make maxClusterRadius less than 60, as loads lots of thumbnails!
+NOTE: PLEASE don't make maxClusterRadius less than about 60, as it can load lots of thumbnails!
 
 
 ## Use

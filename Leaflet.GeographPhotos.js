@@ -59,10 +59,12 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 			showPhotoLayer: true, //can turn off the images, but that would be unusual!
 			showDotsLayer: false, //if turn this on, need to load leaflet-maskcanvas first
 			autoZoomOnAdd: false,
+			autoLoadOnMove: true, //normally will load more images as pan/zoom the map. but in particular might want to disable this if lloading all images on initial load (eg when using 'geo')
 
 			//can filter the layer
-			query: '',
-			user_id: null, //todo, not implemented yet!
+			query: '', //optional, a fulltext query to filter images
+			user_id: null, //optional, specify a numeric geograph profile id to only show that users images
+			geo: null, //optional, a centered search format 'lat,long,distance', eg '52.950583,-3.936389,2000'
 
 			//general. Note: can narrow the bounds, but please dont make wider, we dont have photos outside these bounds!
 			bounds: L.latLngBounds(L.latLng(49.863788, -13.688451), L.latLng(60.860395, 1.795260)), 
@@ -131,7 +133,8 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 			}
 
 		    if (this._totalImages) { //there are images to show (initialRequest already called)
-			map.on('moveend', this.requestData, this);
+			if (this.options.autoLoadOnMove)
+				map.on('moveend', this.requestData, this);
 	                this.requestData();
 		    } else if (!this._initialDone) { //just in case it was called, but found no results
   	                this.initialRequest(); //will add moveend if needed!
@@ -153,8 +156,8 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 	        */
 	        onRemove: function (map) {
                     L.Photo.Cluster.prototype.onRemove.call(this,map);
-
-	            map.off('moveend', this.requestData, this);
+		    if (this.options.autoLoadOnMove)
+		        map.off('moveend', this.requestData, this);
 	            this.clear();
 		    this._done = new Array(); //need to clear these so the layer will work if/when re-added
 		    this._shownall = false;
@@ -206,6 +209,9 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 
 			//make the initial request, that calls fitBounds to zoom map to extent of query results. The 'order=sequence' is magic in that results should be relatively evenly distributed over the whole map
 			query = encodeURIComponent(this.options.query+(this.options.user_id?' @user user'+this.options.user_id:''));
+			if (options.geo) {
+				query = query + "&geo="+encodeURIComponent(this.options.geo);
+			}
 
 			var that = this; //enclosure!
 			this._request = reqwest({
@@ -231,7 +237,8 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 						that._totalImages = data.meta.total_found;
 
 						//there are more results than displayed, so update the map when zoom
-						that._map.on('moveend', that.requestData, that);
+						if (that.options.autoLoadOnMove)
+							that._map.on('moveend', that.requestData, that);
 					} else {
 						var message = data.meta.total_found+' images';
 
@@ -282,6 +289,9 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 				this._running = true;
 
 				var query = encodeURIComponent(this.options.query+(this.options.user_id?' @user user'+this.options.user_id:''));
+				if (options.geo) {
+					query = query + "&geo="+encodeURIComponent(this.options.geo);
+				}
 				var that = this; //enclosure!
 				this._request =  reqwest({
 	                		url: this.options.endpoint+'?match='+query+'&olbounds='+this._sentBounds+'&select='+this.options.select+'&order=rand()&limit=500&callback=?&key='+this.options.api_key+this.options.extra,
