@@ -209,7 +209,7 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 
 			//make the initial request, that calls fitBounds to zoom map to extent of query results. The 'order=sequence' is magic in that results should be relatively evenly distributed over the whole map
 			query = encodeURIComponent(this.options.query+(this.options.user_id?' @user user'+this.options.user_id:''));
-			if (options.geo) {
+			if (this.options.geo) {
 				query = query + "&geo="+encodeURIComponent(this.options.geo);
 			}
 
@@ -289,7 +289,7 @@ if (L.MarkerClusterGroup && L.Photo.Cluster) {
 				this._running = true;
 
 				var query = encodeURIComponent(this.options.query+(this.options.user_id?' @user user'+this.options.user_id:''));
-				if (options.geo) {
+				if (this.options.geo) {
 					query = query + "&geo="+encodeURIComponent(this.options.geo);
 				}
 				var that = this; //enclosure!

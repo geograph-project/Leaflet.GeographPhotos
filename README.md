@@ -48,9 +48,9 @@ https://www.geograph.org/leaflet/Leaflet.GeographPhotos/GeographPhotos-example.h
 
 * **project**: which Geograph Project to load. Defaults to 'britire', can also use 'germany' or 'islands' (for Channel Islands!) 
 
-* **query**: Full-text query to filter images. A raw text query in SphinxSearch 'Extended Syntax' format. http://sphinxsearch.com/docs/current.html#extended-syntax . But see also https://www.geograph.org.uk/article/Keyword-Searching-in-the-Browser for a list/names of Fields that supported in the index. (but need to still use sphinxes field syntax, eg [@myriad SH50] or [@tags river])
+* **query**: Full-text query to filter images. A raw text query in SphinxSearch 'Extended Syntax' format. http://sphinxsearch.com/docs/current.html#extended-syntax . But see also https://www.geograph.org.uk/article/Keyword-Searching-in-the-Browser for a list/names of Fields that supported in the index. (but need to still use Sphinxes field syntax, eg `@myriad SH50` or `@tags river`)
 * **user_id**: Can optionally filter by a Geograph User/Contributor ID.  
-* **geo**: do a geographically centered serach on a specific lat/long, format 'lat,long,distance', eg `52.950583,-3.936389,2000`
+* **geo**: do a geographically centered search on a specific lat/long, format 'lat,long,distance', eg `52.950583,-3.936389,2000`
 
 * **showPhotoLayer**: default true, but can disable the Photo layer (but will stil need to load Leaflet.Photo even though its 'unused'
 * **showDotsLayer**: default false. can enable to show a preview of dots coverage. leaflet-maskcanvas is only needed if enabled
